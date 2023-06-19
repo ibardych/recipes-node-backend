@@ -8,7 +8,7 @@ const ObjectId = require("mongodb").ObjectId;
 const createOwnRecipe = async (req, res) => {
   const { _id: owner } = req.user;
   const parsedIngredients = JSON.parse(req.body.ingredients);
-  // console.log(typeof parsedIngredients);
+
   const newRecipe = await Recipe.create({
     ...req.body,
     ingredients: parsedIngredients,
@@ -25,10 +25,10 @@ const createOwnRecipe = async (req, res) => {
   const resultUploadThumb = path.join(recipeDir, recipeNameThumb);
   const resultUploadPreview = path.join(recipeDir, recipeNamePreview);
 
-  Jimp.read(tempUpload, (err, image) => {
+  Jimp.read(tempUpload, async (err, image) => {
     if (err) throw err;
-    image.resize(700, 700).quality(100).write(resultUploadThumb);
-    image.resize(350, 350).quality(100).write(resultUploadPreview);
+    await image.resize(700, 700).quality(100).write(resultUploadThumb);
+    await image.resize(350, 350).quality(100).write(resultUploadPreview);
   });
   fs.unlink(tempUpload);
 
@@ -50,14 +50,16 @@ const createOwnRecipe = async (req, res) => {
 const getOwnRecipes = async (req, res) => {
   const { _id: owner } = req.user;
 
-  const result = await Recipe.find({ owner: new ObjectId(owner) });
+  const result = await Recipe.find({ owner }).sort({ createdAt: -1 });
 
   res.json(result);
 };
 
 const deleteOwnRecipeById = async (req, res) => {
   const { recipeId } = req.params;
-  const result = await Recipe.findOneAndRemove({ _id: new ObjectId(recipeId) });
+
+  const result = await Recipe.findByIdAndRemove(recipeId);
+
   if (!result) {
     throw HttpError(404, "Not found");
   }
