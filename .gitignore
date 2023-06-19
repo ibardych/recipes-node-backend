@@ -4,3 +4,9 @@ node_modules/
 .vscode
 .prettierrc
 __tests__/
+
+public/avatars/*
+public/recipes/*
+
+!public/avatars/.gitkeep
+!public/recipes/.gitkeep
