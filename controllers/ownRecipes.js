@@ -3,7 +3,6 @@ const { ctrlWrapper, HttpError } = require("../helpers");
 const path = require("path");
 const Jimp = require("jimp");
 const fs = require("fs/promises");
-const ObjectId = require("mongodb").ObjectId;
 
 const createOwnRecipe = async (req, res) => {
   const { _id: owner } = req.user;
@@ -35,16 +34,14 @@ const createOwnRecipe = async (req, res) => {
   const recipeThumb = "recipes/" + recipeNameThumb;
   const recipePreview = "recipes/" + recipeNamePreview;
 
-  const query = { _id: new ObjectId(recipeId) };
-
-  await Recipe.findOneAndUpdate(query, {
+  const recipe = await Recipe.findByIdAndUpdate(recipeId, {
     thumb: recipeThumb,
     preview: recipePreview,
   });
 
-  res.status(201).json({
-    newRecipe,
-  });
+  // const recipe = await Recipe.findById(recipeId);
+
+  res.status(201).json(recipe);
 };
 
 const getOwnRecipes = async (req, res) => {
