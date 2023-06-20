@@ -200,7 +200,7 @@ const updateUserDataCloud = async (req, res) => {
 
   const newData = { username };
 
-  if (req.file.path !== undefined) {
+  if (req.file) {
     console.log(req.file.path);
     newData.avatarURL = req.file.path;
   }
