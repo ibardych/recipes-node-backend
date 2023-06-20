@@ -193,6 +193,27 @@ const updateUserData = async (req, res) => {
   res.status(200).json(user);
 };
 
+const updateUserDataCloud = async (req, res) => {
+  const { _id } = req.user;
+
+  const { username } = req.body;
+
+  const newData = { username };
+
+  if (req.file.path) {
+    console.log(req.file.path);
+    newData.avatarURL = req.file.path;
+  }
+
+  console.log(newData);
+
+  const user = await User.findByIdAndUpdate(_id, newData, {
+    returnDocument: "after",
+  });
+
+  res.status(200).json(user);
+};
+
 module.exports = {
   register: ctrlWrapper(register),
   resendVerifyEmail: ctrlWrapper(resendVerifyEmail),
@@ -202,4 +223,5 @@ module.exports = {
   logout: ctrlWrapper(logout),
   updateSubscription: ctrlWrapper(updateSubscription),
   updateUserData: ctrlWrapper(updateUserData),
+  updateUserDataCloud: ctrlWrapper(updateUserDataCloud),
 };

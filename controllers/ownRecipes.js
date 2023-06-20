@@ -44,6 +44,33 @@ const createOwnRecipe = async (req, res) => {
   res.status(201).json(recipe);
 };
 
+const createOwnRecipeCloud = async (req, res) => {
+  const { _id: owner } = req.user;
+
+  const {
+    body: { title, description, category, time, ingredients, instructions },
+    file,
+  } = req;
+
+  const thumb = file.path;
+  const preview = file.path;
+
+  const data = {
+    title,
+    description,
+    category,
+    time,
+    ingredients: JSON.parse(ingredients),
+    instructions,
+    thumb,
+    preview,
+  };
+
+  const result = await Recipe.create({ ...data, owner });
+
+  res.status(201).json(result);
+};
+
 const getOwnRecipes = async (req, res) => {
   const { _id: owner } = req.user;
 
@@ -65,6 +92,7 @@ const deleteOwnRecipeById = async (req, res) => {
 
 module.exports = {
   createOwnRecipe: ctrlWrapper(createOwnRecipe),
+  createOwnRecipeCloud: ctrlWrapper(createOwnRecipeCloud),
   getOwnRecipes: ctrlWrapper(getOwnRecipes),
   deleteOwnRecipeById: ctrlWrapper(deleteOwnRecipeById),
 };

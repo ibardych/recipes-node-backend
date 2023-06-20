@@ -5,6 +5,7 @@ const authenticate = require("./authenticate");
 const validateSubscription = require("./validateSubscription");
 const validateEmail = require("./validateEmail");
 const upload = require("./upload");
+const { uploadAvatar, uploadRecipe } = require("./upload.cloudinary");
 
 module.exports = {
   validateBody,
@@ -14,4 +15,6 @@ module.exports = {
   validateSubscription,
   validateEmail,
   upload,
+  uploadAvatar,
+  uploadRecipe,
 };

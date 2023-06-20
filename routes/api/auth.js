@@ -5,7 +5,7 @@ const {
   authenticate,
   validateSubscription,
   validateEmail,
-  upload,
+  uploadAvatar,
 } = require("../../middlewares");
 const { schemas } = require("../../models/user");
 const ctrl = require("../../controllers/auth");
@@ -31,8 +31,8 @@ router.patch(
 router.patch(
   "/update",
   authenticate,
-  upload.single("file"),
-  ctrl.updateUserData
+  uploadAvatar.single("file"), // upload.single("file"),
+  ctrl.updateUserDataCloud
 );
 
 module.exports = router;
