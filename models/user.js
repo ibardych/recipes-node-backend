@@ -28,7 +28,8 @@ const userSchema = new Schema({
   gravatar: { type: Boolean, default: true },
   shoppingList: Array,
   favoriteRecipeIds: Array,
-  token: String,
+  accessToken: String,
+  refreshToken: String,
   verify: {
     type: Boolean,
     default: false,
@@ -73,11 +74,16 @@ const updateSubscriptionSchema = Joi.object({
   }),
 });
 
+const refreshSchema = Joi.object({
+  refreshToken: Joi.string().required(),
+});
+
 const schemas = {
   registerSchema,
   emailSchema,
   loginSchema,
   updateSubscriptionSchema,
+  refreshSchema,
 };
 
 const User = model("user", userSchema);

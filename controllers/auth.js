@@ -8,7 +8,7 @@ const path = require("path");
 const Jimp = require("jimp");
 const { nanoid } = require("nanoid");
 
-const { SECRET_KEY, BASE_URL } = process.env;
+const { ACCESS_SECRET_KEY, REFRESH_SECRET_KEY, BASE_URL } = process.env;
 
 const register = async (req, res) => {
   const { email, password } = req.body;
@@ -107,18 +107,56 @@ const login = async (req, res) => {
     id: user._id,
   };
 
-  const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
+  const accessToken = jwt.sign(payload, ACCESS_SECRET_KEY, {
+    expiresIn: "2m",
+  });
+  const refreshToken = jwt.sign(payload, REFRESH_SECRET_KEY, {
+    expiresIn: "7d",
+  });
 
-  await User.findByIdAndUpdate(user._id, { token });
+  await User.findByIdAndUpdate(user._id, { accessToken, refreshToken });
 
   res.status(201).json({
-    token,
+    accessToken,
+    refreshToken,
     user: {
       id: user._id,
       email: user.email,
       username: user.username,
     },
   });
+};
+
+const refresh = async (req, res) => {
+  const { refreshToken: token } = req.body;
+
+  try {
+    const { id } = jwt.verify(token, REFRESH_SECRET_KEY);
+
+    const isExist = await User.findOne({ refreshToken: token });
+
+    if (!isExist) {
+      HttpError(403, "Token invalid");
+    }
+
+    const payload = { id };
+
+    const accessToken = jwt.sign(payload, ACCESS_SECRET_KEY, {
+      expiresIn: "2m",
+    });
+    const refreshToken = jwt.sign(payload, REFRESH_SECRET_KEY, {
+      expiresIn: "7d",
+    });
+
+    await User.findByIdAndUpdate(id, { accessToken, refreshToken });
+
+    res.status(201).json({
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    HttpError(403, error.message);
+  }
 };
 
 const getCurrentUser = async (req, res) => {
@@ -146,7 +184,7 @@ const getCurrentUser = async (req, res) => {
 const logout = async (req, res) => {
   const { _id: userId } = req.user;
 
-  await User.findByIdAndUpdate(userId, { token: "" });
+  await User.findByIdAndUpdate(userId, { accessToken: "", refreshToken: "" });
 
   res.status(204).json({});
 };
@@ -219,6 +257,7 @@ module.exports = {
   resendVerifyEmail: ctrlWrapper(resendVerifyEmail),
   verifyEmail: ctrlWrapper(verifyEmail),
   login: ctrlWrapper(login),
+  refresh: ctrlWrapper(refresh),
   getCurrentUser: ctrlWrapper(getCurrentUser),
   logout: ctrlWrapper(logout),
   updateSubscription: ctrlWrapper(updateSubscription),
