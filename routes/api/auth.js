@@ -34,6 +34,7 @@ router.patch(
   uploadAvatar.single("file"), // upload.single("file"),
   ctrl.updateUserDataCloud
 );
+
 router.post("/refresh", validateBody(schemas.refreshSchema), ctrl.refresh);
 
 module.exports = router;

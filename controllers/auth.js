@@ -10,6 +10,9 @@ const { nanoid } = require("nanoid");
 
 const { ACCESS_SECRET_KEY, REFRESH_SECRET_KEY, BASE_URL } = process.env;
 
+const accessTokenExpiresIn = "2m";
+const refreshTokenExpiresIn = "7d";
+
 const register = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
@@ -108,10 +111,10 @@ const login = async (req, res) => {
   };
 
   const accessToken = jwt.sign(payload, ACCESS_SECRET_KEY, {
-    expiresIn: "2m",
+    expiresIn: accessTokenExpiresIn,
   });
   const refreshToken = jwt.sign(payload, REFRESH_SECRET_KEY, {
-    expiresIn: "7d",
+    expiresIn: refreshTokenExpiresIn,
   });
 
   await User.findByIdAndUpdate(user._id, { accessToken, refreshToken });
@@ -123,6 +126,7 @@ const login = async (req, res) => {
       id: user._id,
       email: user.email,
       username: user.username,
+      avatarURL: user.avatarURL,
     },
   });
 };
@@ -136,26 +140,33 @@ const refresh = async (req, res) => {
     const isExist = await User.findOne({ refreshToken: token });
 
     if (!isExist) {
-      HttpError(403, "Token invalid");
+      throw HttpError(403, "Token invalid");
+    } else {
+      console.log("exist");
     }
 
     const payload = { id };
 
     const accessToken = jwt.sign(payload, ACCESS_SECRET_KEY, {
-      expiresIn: "2m",
-    });
-    const refreshToken = jwt.sign(payload, REFRESH_SECRET_KEY, {
-      expiresIn: "7d",
+      expiresIn: accessTokenExpiresIn,
     });
 
-    await User.findByIdAndUpdate(id, { accessToken, refreshToken });
+    // const refreshToken = jwt.sign(payload, REFRESH_SECRET_KEY, {
+    //   expiresIn: refreshTokenExpiresIn,
+    // });
 
-    res.status(201).json({
-      accessToken,
-      refreshToken,
-    });
+    await User.findByIdAndUpdate(id, { accessToken });
+
+    res.status(201).json({ accessToken });
+
+    // await User.findByIdAndUpdate(id, { accessToken, refreshToken });
+
+    // res.status(201).json({
+    //   accessToken,
+    //   refreshToken,
+    // });
   } catch (error) {
-    HttpError(403, error.message);
+    throw HttpError(403, error.message);
   }
 };
 
