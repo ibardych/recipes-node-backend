@@ -93,7 +93,7 @@ const login = async (req, res) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    throw HttpError(401, "Email or password is wrong");
+    throw HttpError(403, "Email or password is wrong");
   }
 
   if (!user.verify) {
@@ -103,7 +103,7 @@ const login = async (req, res) => {
   const passwordCompare = await bcrypt.compare(password, user.password);
 
   if (!passwordCompare) {
-    throw HttpError(401, "Email or password is wrong");
+    throw HttpError(403, "Email or password is wrong");
   }
 
   const payload = {
